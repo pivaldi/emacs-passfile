@@ -25,7 +25,7 @@ emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ --eval '(load (concat (dir
 
 The password is *plop*.
 
-[[file:secret.png][The secret file decrypted]]
+[[secret.png][The secret file decrypted]]
 
 For my part I create a script that opens my favorite encrypted file:
 #+BEGIN_SRC bash
