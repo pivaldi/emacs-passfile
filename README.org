@@ -1,0 +1,50 @@
+#+title: Emacs PassFile
+
+This very simple Emacs package allows to view and edit securely a GnuPG encrypted file.
+
+* Why this package?
+
+Take a look at the non encrypted file [[secret.txt]], the file ~secret.gpg~ is his GnuPG encrypted version.\\
+You can for sure open the ~.gpg~ file with your Emacs evilly tuned with hundred of packages, but
+you risk to open your secret file with malicious code embedded in packages that
+are automatically downloaded and installed.
+
+In order to prevent this, the purpose of this package is to open your secret
+file in a *minimalist Emacs configuration* that hide the text you want, as you
+want and provide a set of function to generate strong password.
+
+*The secret file does not follows any structured design, you write what you want like you want.*
+
+* Let it a try
+
+#+BEGIN_SRC bash
+cd WHERE_YOU_WANT
+git clone https://github.com/pivaldi/emacs-passfile
+emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ --eval '(load (concat (directory-file-name user-emacs-directory) "/custom-example.el"))' WHERE_YOU_WANT/emacs-passfile/secret.gpg
+#+END_SRC
+
+The password is *plop*.
+
+[[img:secret.png][The secret file decrypted]]
+
+For my part I create a script that opens my favorite encrypted file:
+#+BEGIN_SRC bash
+#!/usr/bin/env bash
+
+emacs --init-directory=/usr/local/src/emacs/emacs-passfile/ $HOME/secret.gpg
+#+END_SRC
+
+* Dependencies
+
+This packages have two dependencies:
+- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.
+- [[https://github.com/jekor/hidepw][hidepw]]: minor mode for hiding passwords. It’s useful if you view your passwords in Emacs and want to prevent shoulder surfing.
+
+* Customization/Configuration
+** hidepw
+- You can customize the variable ~hidepw-patterns~ of the package [[https://github.com/jekor/hidepw][hidepw]] like shown in the file [[custom-example.el]].
+- See ~M-x customize-group [RET]hidepw[RET]~ for further customization.
+** Emacs configuration
+For convenience, you can add your own Emacs configuration in the personal file
+~configure.el~ but remember that it is not recommended to install external
+packages.

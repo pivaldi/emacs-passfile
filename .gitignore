@@ -1,0 +1,6 @@
+eln-cache/**
+elpa/**
+projects
+*.*~
+custom.el
+configure.el
