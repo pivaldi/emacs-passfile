@@ -14,6 +14,11 @@ file in a *minimalist Emacs configuration* that *hide the text you want and prov
 
 The secret file does not follows any structured design, you write what you want like you want.
 
+** Without ~emacs-passfile~
+#+html: <p align="center"><img src="secret-text.png" /></p>
+** With ~emacs-passfile~
+#+html: <p align="center"><img src="secret.png" /></p>
+
 * Let it a try
 
 #+BEGIN_SRC bash
@@ -24,41 +29,12 @@ emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ WHERE_YOU_WANT/emacs-passf
 
 The password is ~plop~.
 
-#+html: <p align="center"><img src="secret.png" /> is viewed like this <img src="secret.png" /></p>
-
 For my part I created a script that opens my favorite encrypted file:
 #+BEGIN_SRC bash
 #!/usr/bin/env bash
 
 emacs --init-directory="$HOME/src/emacs/emacs-passfile/" "$HOME/secret.gpg"
 #+END_SRC
-
-* Dependencies
-
-This packages have two dependencies:
-- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.\\
-  ~emacs-passfile~ provides the function ~epf-password-generate~, a wrapper of ~-password-generator-paranoid~.
-- [[https://github.com/jekor/hidepw][hidepw]]: minor mode for hiding passwords. It’s useful if you view your passwords in Emacs and want to prevent shoulder surfing.
-
-* Customization & Configuration
-** hidepw
-- ~emacs-passfile~ use this configuration :
-  #+BEGIN_SRC
-    (setq hidepw-patterns
-          '("#\\+hidden\n\\([^]*?\\)\n#-hidden$"
-            " \\[\\(.+\\)\\] ?"
-            "^\\[\\(.+\\)\\] ?"
-            "[pP]wd[  ]?: \\([^ \n]+\\)"
-            "[pP]assword[  ]?: \\(.+\\)$"
-            "[uU]ser[  ]?: \\([^ \n]+\\)"
-            "[uU]sername[  ]?: \\(.+\\)"))
-  #+END_SRC
-- You can customize the variable ~hidepw-patterns~ of the package [[https://github.com/jekor/hidepw][hidepw]] like shown in the file [[custom-example.el]].
-- See ~M-x customize-group [RET]hidepw[RET]~ for further customization.
-** Emacs configuration
-For convenience, you can add your own Emacs configuration in the personal file
-~configure.el~ but remember that it is not recommended to install external
-packages.
 
 * Hiding Content
 ** Hiding Password
@@ -86,3 +62,92 @@ This package use [[https://github.com/vandrlexay/emacs-password-genarator][passw
 - ~password-generator-strong~: the best password you can get.  Some symbols does not included to make you free from problems which occurs when your shell try interpolate $, \ and others.
 - ~password-generator-numeric~: use numeric passwords like credit card PIN-code.
 - ~password-generator-phonetic~: easy to remeber, because of fonetic, but not so secure…
+
+* Dependencies
+
+This packages have two dependencies:
+- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.\\
+  ~emacs-passfile~ provides the function ~epf-password-generate~, a wrapper of ~-password-generator-paranoid~.
+- [[https://github.com/jekor/hidepw][hidepw]]: minor mode for hiding passwords. It’s useful if you view your passwords in Emacs and want to prevent shoulder surfing.
+
+* Customization & Configuration
+** hidepw
+- ~emacs-passfile~ use this configuration :
+  #+BEGIN_SRC
+    (setq hidepw-patterns
+          '("#\\+hidden\n\\([^]*?\\)\n#-hidden$"
+            " \\[\\(.+\\)\\] ?"
+            "^\\[\\(.+\\)\\] ?"
+            "[pP]wd[  ]?: \\([^ \n]+\\)"
+            "[pP]assword[  ]?: \\(.+\\)$"
+            "[uU]ser[  ]?: \\([^ \n]+\\)"
+            "[uU]sername[  ]?: \\(.+\\)"))
+  #+END_SRC
+- You can customize the variable ~hidepw-patterns~ of the package [[https://github.com/jekor/hidepw][hidepw]] with the ~customize-variable~ command.
+- See ~M-x customize-group [RET]hidepw[RET]~ for further customization.
+** Emacs configuration
+For convenience, you can add your own Emacs configuration in the personal file
+~configure.el~ but remember that it is not recommended to install external
+packages.
+
+Here my personal configuration:
+
+#+BEGIN_SRC lisp
+;;; configure.el --- My personnal configuration -*- lexical-binding: t; -*-
+;;
+;;; Commentary:
+;;; Code:
+
+(delete-selection-mode 1)
+(show-paren-mode 1)
+
+(require 'skeleton)
+(setq skeleton-pair t)
+
+;;;###autoload
+(defun epf-kill-window-and-buffer()
+  "Delete current window and buffer."
+  (interactive)
+  (kill-current-buffer)
+  (condition-case nil (delete-window) (error nil)))
+(global-set-key [f12] #'epf-kill-window-and-buffer)
+
+;;;###autoload
+(defun epf-new-login()
+  "Insert a new login entry : Username:… Pwd:…."
+  (interactive)
+  (let ((user (read-from-minibuffer "Username: ")))
+    (insert (format "Username: %s\nPwd: %s\n" user (epf-password-generate nil t)))))
+
+;;;###autoload
+(defun epf-scroll-up()
+  "Scroll up keeping the cursor on the same line."
+  (interactive)
+  (let ((scroll-preserve-screen-position t))
+    (scroll-up 1)))
+
+;;;###autoload
+(defun epf-scroll-down()
+  "Scroll down keeping the cursor on the same line."
+  (interactive)
+  (let ((scroll-preserve-screen-position t))
+    (scroll-down 1)))
+
+(global-set-key (kbd "C-c p") #'epf-password-generate)
+(global-set-key (kbd "C-M-<prior>") #'move-beginning-of-line)
+(global-set-key (kbd "C-M-<next>") #'move-end-of-line)
+(global-set-key (kbd "C-<prior>") (lambda nil (interactive) (other-window -1 nil)))
+(global-set-key (kbd "C-<next>") (lambda nil (interactive) (other-window 1 nil)))
+(global-set-key (kbd "C-c l") #'epf-new-login)
+(global-set-key (kbd "C-M-<down>") #'epf-scroll-down)
+(global-set-key (kbd "C-M-<up>") #'epf-scroll-up)
+(global-set-key (kbd "C-:") 'undo-redo)
+(global-set-key "\{" 'skeleton-pair-insert-maybe)
+(global-set-key "\(" 'skeleton-pair-insert-maybe)
+(global-set-key "[" 'skeleton-pair-insert-maybe)
+(global-set-key "\"" 'skeleton-pair-insert-maybe)
+(global-set-key "'" 'skeleton-pair-insert-maybe)
+
+(provide 'configure)
+;;; configure.el ends here
+#+END_SRC
