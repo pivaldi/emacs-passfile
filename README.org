@@ -1,25 +1,27 @@
 #+title: Emacs PassFile
 
-This very simple Emacs package allows to view and edit securely a GnuPG encrypted file.
+This simple Emacs package allows you to securely view and edit a GnuPG-encrypted file.
 
-* Why this Package?
+* Why This Package?
 
-Take a look at the non encrypted file [[secret.txt]], the file ~secret.gpg~ is his GnuPG encrypted version.\\
-You can for sure open the ~.gpg~ file with your Emacs evilly tuned with hundred of packages, but
-you risk to open your secret file with malicious code embedded in packages that
-are automatically downloaded and installed.
+Consider the decrypted file [[secret.txt]] and its encrypted counterpart ~secret.gpg~.\\
+While you could open the ~.gpg~ file in Emacs, especially if you have many
+packages installed, this comes with the risk that malicious code embedded in
+those packages (automatically downloaded and installed) could access your
+secrets.
 
-In order to prevent this, the purpose of this package is to open your secret
-file in a *minimalist Emacs configuration* that *hide the text you want and provide a set of functions to generate strong password*.
+To prevent this, the goal of this package is to open your secret file in a
+*minimalist Emacs configuration* that *hides sensitive text and provides
+functions to generate strong passwords*.
 
-The secret file does not follows any structured design, you write what you want like you want.
+Your secret file does not need to follow any specific structure, write whatever you want, however you like.
 
 ** Without ~emacs-passfile~
 #+html: <p align="center"><img src="secret-txt.png" /></p>
 ** With ~emacs-passfile~
 #+html: <p align="center"><img src="secret.png" /></p>
 
-* Let it a try
+* Getting Started
 
 #+BEGIN_SRC bash
 cd WHERE_YOU_WANT
@@ -29,51 +31,51 @@ emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ WHERE_YOU_WANT/emacs-passf
 
 The password is ~plop~.
 
-For my part I created a script that opens my favorite encrypted file:
+Personally, I created a script to open my favorite encrypted file:
 #+BEGIN_SRC bash
 #!/usr/bin/env bash
 
-emacs --init-directory="$HOME/src/emacs/emacs-passfile/" "$HOME/secret.gpg"
+emacs --init-directory="$HOME/src/emacs-passfile/" "$HOME/secret.gpg"
 #+END_SRC
 
 * Hiding Content
-** Hiding Password
-- ~pwd: xxxxxxxxxx~ : hide the ~xxxxxxxxxx~ but stop on a space. Useful on one-line content
-- ~password: xxxxx xxxxx~ : hide the ~xxxxx xxxxx~ and does not stop on any character. Can not be mixed with other content.
+** Hiding Passwords
+- ~pwd: xxxxxxxxxx~ : hides the ~xxxxxxxxxx~, stopping at the next space. Useful for one-line content.
+- ~password: xxxxx xxxxx~ : hides the entire ~xxxxx xxxxx~ string, regardless of spaces. Cannot be mixed with other content on the same line.
 
-**  Hiding Username
-- ~user: xxxxxxxxxx~ : hide the ~xxxxxxxxxx~ but stop on a space. Useful on one-line content
-- ~username: xxxxx xxxxx~ : hide the ~xxxxx xxxxx~ and does not stop on any character. Can not be mixed with other content.
-- ~[xxxxxxxxxx]~ : hide the ~xxxxxxxxxx~ but only one block surrounded by brackets can b used by line because of clobbering.
+** Hiding Usernames
+- ~user: xxxxxxxxxx~ : hides the ~xxxxxxxxxx~, stopping at the next space. Useful for one-line content.
+- ~username: xxxxx xxxxx~ : hides the full ~xxxxx xxxxx~ string, regardless of spaces. Cannot be mixed with other content on the same line.
+- ~[xxxxxxxxxx]~ : hides the ~xxxxxxxxxx~. Only one bracketed block can be used per line due to overlap.
 
-** Hidding Paragraph
-A whole paragraph can be hidden whit the block delimiter ~#+hidden~ and  ~#-hidden~ like this:
+** Hiding Paragraphs
+A whole paragraph can be hidden using the block delimiters ~#+hidden~ and ~#-hidden~ as shown:
 #+BEGIN_SRC
 #+hidden
 …content…
 #-hidden
 #+END_SRC
 
-* Generate Password
+* Password Generation
 
-This package use [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]] to provides useful functions in order to generate passwords :
-- ~epf-password-generate~: generate a password for paranoiac.
-- ~password-generator-simple~: minimal viable password for most of web systems.  It is not secure but allow to register.
-- ~password-generator-strong~: the best password you can get.  Some symbols does not included to make you free from problems which occurs when your shell try interpolate $, \ and others.
-- ~password-generator-numeric~: use numeric passwords like credit card PIN-code.
-- ~password-generator-phonetic~: easy to remeber, because of fonetic, but not so secure…
+This package uses [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]] to provide useful functions for creating passwords:
+- ~epf-password-generate~: generates a strong password for security-focused users.
+- ~password-generator-simple~: generates a simple password sufficient for most websites (not highly secure, but usually enough to register).
+- ~password-generator-strong~: generates the strongest possible password, omitting certain symbols (like $, \, etc.) to avoid shell escaping issues.
+- ~password-generator-numeric~: generates numeric-only passwords, such as credit card PIN codes.
+- ~password-generator-phonetic~: generates passwords that are easy to remember because of their phonetic structure, though they are less secure.
 
 * Dependencies
 
-This packages have two dependencies:
-- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.\\
-  ~emacs-passfile~ provides the function ~epf-password-generate~, a wrapper of ~-password-generator-paranoid~.
-- [[https://github.com/jekor/hidepw][hidepw]]: minor mode for hiding passwords. It’s useful if you view your passwords in Emacs and want to prevent shoulder surfing.
+This package has two dependencies:
+- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them directly into the buffer.\\
+  ~emacs-passfile~ provides the function ~epf-password-generate~, which wraps ~password-generator-paranoid~.
+- [[https://github.com/jekor/hidepw][hidepw]]: a minor mode for hiding passwords. This is useful if you view your passwords in Emacs and want to prevent shoulder surfing.
 
 * Customization & Configuration
 ** hidepw
-- ~emacs-passfile~ use this configuration :
-  #+BEGIN_SRC
+- ~emacs-passfile~ uses the following configuration:
+  #+BEGIN_SRC emacs-lisp
     (setq hidepw-patterns
           '("#\\+hidden\n\\([^]*?\\)\n#-hidden$"
             " \\[\\(.+\\)\\] ?"
@@ -83,17 +85,17 @@ This packages have two dependencies:
             "[uU]ser[  ]?: \\([^ \n]+\\)"
             "[uU]sername[  ]?: \\(.+\\)"))
   #+END_SRC
-- You can customize the variable ~hidepw-patterns~ of the package [[https://github.com/jekor/hidepw][hidepw]] with the ~customize-variable~ command.
+- You can customize the variable ~hidepw-patterns~ from the [[https://github.com/jekor/hidepw][hidepw]] package using the ~customize-variable~ command.
 - See ~M-x customize-group [RET]hidepw[RET]~ for further customization.
+
 ** Emacs configuration
 For convenience, you can add your own Emacs configuration in the personal file
-~configure.el~ but remember that it is not recommended to install external
-packages.
+~configure.el~. However, it is not recommended to install external packages in this setup.
 
-Here my personal configuration:
+Here is my personal configuration:
 
-#+BEGIN_SRC lisp
-;;; configure.el --- My personnal configuration -*- lexical-binding: t; -*-
+#+BEGIN_SRC emacs-lisp
+;;; configure.el --- My personal configuration -*- lexical-binding: t; -*-
 ;;
 ;;; Commentary:
 ;;; Code:
@@ -114,7 +116,7 @@ Here my personal configuration:
 
 ;;;###autoload
 (defun epf-new-login()
-  "Insert a new login entry : Username:… Pwd:…."
+  "Insert a new login entry: Username:… Pwd:…."
   (interactive)
   (let ((user (read-from-minibuffer "Username: ")))
     (insert (format "Username: %s\nPwd: %s\n" user (epf-password-generate nil t)))))
@@ -151,3 +153,14 @@ Here my personal configuration:
 (provide 'configure)
 ;;; configure.el ends here
 #+END_SRC
+
+* License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+* Acknowledgments
+
+- Inspired by the need for simple, secure, and minimal password management within Emacs.
+- Thanks to the authors of [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]] and [[https://github.com/jekor/hidepw][hidepw]] for their useful libraries.
+
+For more information, bug reports, or contributions, please visit the [[https://github.com/pivaldi/emacs-passfile][GitHub repository]].
