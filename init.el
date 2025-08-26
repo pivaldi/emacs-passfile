@@ -1,4 +1,4 @@
-;;; init.el Store --- All your secrets in a simple file -*- lexical-binding: t; -*-
+;;; init.el --- Store all your secrets in a simple file -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2025 Philippe IVALDI
 ;;
@@ -6,7 +6,7 @@
 ;; Maintainer: Philippe IVALDI <emacs@MY-NAME.me>
 ;; Created: August 25, 2025
 ;; Version: 0.0.1
-;; Keywords: emacs password manager
+;; Keywords: emacs password manager security
 ;; Homepage: https://github.com/pivaldi/emacs-passfile
 ;; Package-Requires: ((emacs "30") (password-generator "1.20") (hidepw "0.3.0"))
 ;;
