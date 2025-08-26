@@ -17,12 +17,20 @@
 ;;; Code:
 
 (setq
+ ;; No disturbation
  inhibit-startup-screen t
  inhibit-startup-message t
  initial-scratch-message nil
+
+ ;; Security enhancement
  enable-local-variables nil
  enable-local-eval nil
- tramp-mode nil)
+ tramp-mode nil
+
+ ;; Improve font lock behavior
+ font-lock-maximum-decoration t
+ jit-lock-contextually t
+ jit-lock-context-time 0.1)
 
 (setenv "GPG_AGENT_INFO" nil)
 
@@ -53,21 +61,47 @@
   (interactive)
   (mapc 'epf-package-maybe-install epf-packages-list))
 
-;;;###autoload
-(defun epf-password-generate (&optional len)
-  "Generate a good password with `password-generator-paranoid'.
+(defun epf-font-lock-extend-region ()
+  "Extend the search region to include hidden block.
+Hidden blocks are between #+hidden and #-hidden."
+  (eval-when-compile (defvar font-lock-beg) (defvar font-lock-end))
+  (save-excursion
+    (goto-char font-lock-beg)
+    (let ((found (or (re-search-backward "#\\+hidden\n" nil t) (point-min))))
+      (goto-char font-lock-end)
+      (when (re-search-forward "#-hidden$" nil t)
+        (beginning-of-line)
+        (setq font-lock-end (point)))
+      (setq font-lock-beg found))))
 
-Overwrite the length of the password with an integer prefix arguments."
-  (interactive "P")
-  (password-generator-paranoid len))
+(eval-after-load 'hidepw
+  (lambda nil
+    (add-hook 'hidepw-mode (lambda nil (set (make-local-variable 'font-lock-multiline) t)))
+    (setq hidepw-patterns
+          '("#\\+hidden\n\\([^]*?\\)\n#-hidden$"
+            " \\[\\(.+\\)\\] ?"
+            "^\\[\\(.+\\)\\] ?"
+            "[pP]wd[  ]?: \\([^ \n]+\\)"
+            "[pP]assword[  ]?: \\(.+\\)$"
+            "[uU]ser[  ]?: \\([^ \n]+\\)"
+            "[uU]sername[  ]?: \\(.+\\)"))
+    (add-hook 'font-lock-extend-region-functions
+              'epf-font-lock-extend-region)))
+
+;;;###autoload
+(defun epf-password-generate (&optional len return)
+  "Wrapper of `password-generator-paranoid'."
+  (interactive)
+  (password-generator-paranoid len return))
 
 (epf-packages-maybe-install)
 
 (add-to-list 'auto-mode-alist '("\\.gpg\\'" . hidepw-mode))
 
 (setq custom-file (format "%s/custom.el" (directory-file-name user-emacs-directory)))
+(defvar config-file (format "%s/configure.el" (directory-file-name user-emacs-directory)))
 
-(dolist (f `(,custom-file "configure.el"))
+(dolist (f `(,custom-file ,config-file))
   (when (file-exists-p f)
     (load f)))
 

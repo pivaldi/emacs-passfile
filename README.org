@@ -2,7 +2,7 @@
 
 This very simple Emacs package allows to view and edit securely a GnuPG encrypted file.
 
-* Why this package?
+* Why this Package?
 
 Take a look at the non encrypted file [[secret.txt]], the file ~secret.gpg~ is his GnuPG encrypted version.\\
 You can for sure open the ~.gpg~ file with your Emacs evilly tuned with hundred of packages, but
@@ -10,25 +10,23 @@ you risk to open your secret file with malicious code embedded in packages that
 are automatically downloaded and installed.
 
 In order to prevent this, the purpose of this package is to open your secret
-file in a *minimalist Emacs configuration* that hide the text you want, as you
-want and provide a set of function to generate strong password.
+file in a *minimalist Emacs configuration* that *hide the text you want and provide a set of functions to generate strong password*.
 
-*The secret file does not follows any structured design, you write what you want like you want.*
+The secret file does not follows any structured design, you write what you want like you want.
 
 * Let it a try
 
 #+BEGIN_SRC bash
 cd WHERE_YOU_WANT
 git clone https://github.com/pivaldi/emacs-passfile
-emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ --eval '(load (concat (directory-file-name user-emacs-directory) "/custom-example.el"))' WHERE_YOU_WANT/emacs-passfile/secret.gpg
+emacs --init-directory=WHERE_YOU_WANT/emacs-passfile/ WHERE_YOU_WANT/emacs-passfile/secret.gpg
 #+END_SRC
 
-The password is *plop*.
+The password is ~plop~.
 
-#+html: <p align="center"><img src="secret.png" /></p>
+#+html: <p align="center"><img src="secret.png" /> is viewed like this <img src="secret.png" /></p>
 
-
-For my part I create a script that opens my favorite encrypted file:
+For my part I created a script that opens my favorite encrypted file:
 #+BEGIN_SRC bash
 #!/usr/bin/env bash
 
@@ -38,14 +36,53 @@ emacs --init-directory="$HOME/src/emacs/emacs-passfile/" "$HOME/secret.gpg"
 * Dependencies
 
 This packages have two dependencies:
-- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.
+- [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]]: provides simple functions to create passwords and insert them inside buffer immediately.\\
+  ~emacs-passfile~ provides the function ~epf-password-generate~, a wrapper of ~-password-generator-paranoid~.
 - [[https://github.com/jekor/hidepw][hidepw]]: minor mode for hiding passwords. It’s useful if you view your passwords in Emacs and want to prevent shoulder surfing.
 
-* Customization/Configuration
+* Customization & Configuration
 ** hidepw
+- ~emacs-passfile~ use this configuration :
+  #+BEGIN_SRC
+    (setq hidepw-patterns
+          '("#\\+hidden\n\\([^]*?\\)\n#-hidden$"
+            " \\[\\(.+\\)\\] ?"
+            "^\\[\\(.+\\)\\] ?"
+            "[pP]wd[  ]?: \\([^ \n]+\\)"
+            "[pP]assword[  ]?: \\(.+\\)$"
+            "[uU]ser[  ]?: \\([^ \n]+\\)"
+            "[uU]sername[  ]?: \\(.+\\)"))
+  #+END_SRC
 - You can customize the variable ~hidepw-patterns~ of the package [[https://github.com/jekor/hidepw][hidepw]] like shown in the file [[custom-example.el]].
 - See ~M-x customize-group [RET]hidepw[RET]~ for further customization.
 ** Emacs configuration
 For convenience, you can add your own Emacs configuration in the personal file
 ~configure.el~ but remember that it is not recommended to install external
 packages.
+
+* Hiding Content
+** Hiding Password
+- ~pwd: xxxxxxxxxx~ : hide the ~xxxxxxxxxx~ but stop on a space. Useful on one-line content
+- ~password: xxxxx xxxxx~ : hide the ~xxxxx xxxxx~ and does not stop on any character. Can not be mixed with other content.
+
+**  Hiding Username
+- ~user: xxxxxxxxxx~ : hide the ~xxxxxxxxxx~ but stop on a space. Useful on one-line content
+- ~username: xxxxx xxxxx~ : hide the ~xxxxx xxxxx~ and does not stop on any character. Can not be mixed with other content.
+- ~[xxxxxxxxxx]~ : hide the ~xxxxxxxxxx~ but only one block surrounded by brackets can b used by line because of clobbering.
+
+** Hidding Paragraph
+A whole paragraph can be hidden whit the block delimiter ~#+hidden~ and  ~#-hidden~ like this:
+#+BEGIN_SRC
+#+hidden
+…content…
+#-hidden
+#+END_SRC
+
+* Generate Password
+
+This package use [[https://github.com/vandrlexay/emacs-password-genarator][password-generator]] to provides useful functions in order to generate passwords :
+- ~epf-password-generate~: generate a password for paranoiac.
+- ~password-generator-simple~: minimal viable password for most of web systems.  It is not secure but allow to register.
+- ~password-generator-strong~: the best password you can get.  Some symbols does not included to make you free from problems which occurs when your shell try interpolate $, \ and others.
+- ~password-generator-numeric~: use numeric passwords like credit card PIN-code.
+- ~password-generator-phonetic~: easy to remeber, because of fonetic, but not so secure…
