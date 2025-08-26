@@ -15,7 +15,7 @@ file in a *minimalist Emacs configuration* that *hide the text you want and prov
 The secret file does not follows any structured design, you write what you want like you want.
 
 ** Without ~emacs-passfile~
-#+html: <p align="center"><img src="secret-text.png" /></p>
+#+html: <p align="center"><img src="secret-txt.png" /></p>
 ** With ~emacs-passfile~
 #+html: <p align="center"><img src="secret.png" /></p>
 
